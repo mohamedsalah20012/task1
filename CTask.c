@@ -1,101 +1,103 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
-struct User
-{
-    char username[50];
-    char password[50];
+#define MAX_USERS 10
+#define MAX_NAME_LENGTH 20
+#define MAX_PASSWORD_LENGTH 20
+
+// User struct
+struct User {
+    char username[MAX_NAME_LENGTH];
+    char password[MAX_PASSWORD_LENGTH];
+    union UserStatus {
+        struct Flag {
+            bool active;
+        } flag;
+        int value;
+    } status;
 };
 
-void registerUser(struct User users[], int *userCount)
-{
+// Function to register a new user
+void registerUser(struct User users[], int *numUsers) {
+    if (*numUsers >= MAX_USERS) {
+        printf("Maximum number of users reached.\n");
+        return;
+    }
+    
     struct User newUser;
-    printf("Enter the username: ");
+    printf("Enter username: ");
     scanf("%s", newUser.username);
-    printf("Enter the password: ");
+    printf("Enter password: ");
     scanf("%s", newUser.password);
-
-    users[*userCount] = newUser;
-    (*userCount)++;
-    printf("You have been registered successfully\n");
+    printf("Enter user status (0 for false, 1 for true): ");
+    scanf("%d", &newUser.status.value);
+    
+    users[*numUsers] = newUser;
+    (*numUsers)++;
+    
+    printf("Registration completed successfully.\n");
 }
 
-int loginUser(struct User users[], int userCount, char username[], char password[])
-{
-    for (int i = 0; i < userCount; i++)
-    {
-        if (strcmp(users[i].username, username) == 0 && strcmp(users[i].password, password) == 0)
-        {
-            return 1;
+// Function to check if a user is active
+bool isUserActive(struct User user) {
+    return user.status.flag.active;
+}
+
+// Function to perform user login
+void loginUser(struct User users[], int numUsers) {
+    char username[MAX_NAME_LENGTH];
+    char password[MAX_PASSWORD_LENGTH];
+    
+    printf("Enter username: ");
+    scanf("%s", username);
+    printf("Enter password: ");
+    scanf("%s", password);
+    
+    for (int i = 0; i < numUsers; i++) {
+        if (strcmp(users[i].username, username) == 0 &&
+            strcmp(users[i].password, password) == 0) {
+            bool isActive = isUserActive(users[i]);
+            if (isActive) {
+                printf("login successfully.\n");
+                return;
+            } else {
+                printf("User is not active.\n");
+                return;
+            }
         }
     }
-    return 0;
+    
+    printf("Invalid username or password.\n");
 }
 
-int main()
-{
-    struct User users[100];
-    int userCount = 0;
-    int loggedIn = 0;
-    char currentUser[50];
-
+int main() {
+    struct User users[MAX_USERS];
+    int numUsers = 0;
+    
     int choice;
-    do
-    {
-        printf("\n1. Register\n2. Login\n3. Exit\nEnter your goal: ");
+    do {
+        printf("\n1. Register/");
+        printf("2. Login/");
+        printf("3. Exit\n");
+        printf("Enter your goal: ");
         scanf("%d", &choice);
-
-        switch (choice)
-        {
-        case 1:
-            if (userCount < 100)
-            {
-                registerUser(users, &userCount);
-            }
-            else
-            {
-                printf("Maximum number of users reached.\n");
-            }
-            break;
-        case 2:
-            if (loggedIn)
-            {
-                printf("You are already logged in as %s.\n", currentUser);
-            }
-            else
-            {
-                char username[50];
-                char password[50];
-                printf("Enter your username: ");
-                scanf("%s", username);
-                printf("Enter your password: ");
-                scanf("%s", password);
-
-                if (loginUser(users, userCount, username, password))
-                {
-                    loggedIn = 1;
-                    strcpy(currentUser, username);
-                    printf("Login successful!\n");
-                }
-                else
-                {
-                    printf("Login failed. Invalid username or password.\n");
-                }
-            }
-            break;
-        case 3:
-            printf("Exiting the program.\n");
-            break;
-
-        default:
-            printf("Invalid choice. Please try again.\n");
+        
+        switch (choice) {
+            case 1:
+                registerUser(users, &numUsers);
+                break;
+            case 2:
+                loginUser(users, numUsers);
+                break;
+            case 3:
+                printf("Exit the program ...\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+                break;
         }
-    }
-    while (choice != 3);
-
+    } while (choice != 3);
+    
     return 0;
 }
-
-  
-  
-  
